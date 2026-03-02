@@ -1,13 +1,14 @@
-import { env } from "./env.js";
+import { env } from "../config/env.js";
 
 import pg from 'pg';
 
-import { queryData, queryTables } from "../services/migrateService.js";
+import { queryTables } from "../services/migrateService.js";
 
 const { Pool } = pg;
 
 export const pool = new Pool({
     connectionString: env.postgresUri
+
 });
 
 async function createTables() {

@@ -21,5 +21,5 @@ export const env = {
     port: process.env.PORT ?? 3000,
     postgresUri: process.env.POSTGRES_URI,
     mongoUri: process.env.MONGO_URI,
-    fileDataCsv: process.env.FILE_DATA_CSV ?? "./data/AM-prueba-desempeno-data_m4.xlsx"
+    fileDataCsv: process.env.FILE_DATA_CSV ?? "./data/AM-prueba-desempeno-data_m4.csv"
 }

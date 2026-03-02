@@ -1,6 +1,6 @@
 import { app } from "./app.js";
 import { env } from "./config/env.js";
-import { connectMongoDB } from "./config/mondoDB.js";
+import { connectMongoDB } from "./config/mongoDB.js";
 import { createTables } from "./config/postgres.js";
 
 
