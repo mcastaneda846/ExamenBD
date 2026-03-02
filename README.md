@@ -13,7 +13,7 @@ This project consists of a full-scale data migration and backend implementation 
 ### Installation & Deployment
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com
+   git clone https://github.com/mcastaneda846/ExamenBD.git
    cd repository-name
 
 
@@ -23,3 +23,7 @@ cd proyecto
 # Install dependencies
 
 npm install
+
+# Model Justification
+
+I structured the database using both SQL and NoSQL, as I wanted to take advantage of the benefits that both technologies offer. For example, I implemented SQL for the creation of the tables and their respective relationships, since there is a strong presence and dependency between them. I also used NoSQL because it allows me to make general queries and leverage embedded queries, since it allows me to "avoid" queries with joins (more for practical reasons).

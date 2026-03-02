@@ -1,4 +1,7 @@
+import { promises } from "fs";
 import { pool } from "../config/postgres.js";
+import { resolve } from "dns";
+import { rejects } from "assert";
 //import fs from "fs";
 //import csv from "csv-parser";
 //import { env } from "../config/env.js";
@@ -66,6 +69,88 @@ CREATE TABLE IF NOT EXISTS "sale" (
 
     await client.query("COMMIT");
   } catch (error) {
+    await client.query("ROLLBACK");
+  } finally {
+    client.release();
+  }
+}
+
+// Data inserction
+
+export async function queryData() {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const result = [];
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(env.fileDataCsv)
+        .pipe(csv())
+        .on("data", (data) => result.push(data))
+        .on("end", resolve)
+        .on("error", reject);
+    });
+
+    const counters = {
+      countSupplier : 0,
+      counterProducts : 0,
+    }
+
+    for ( const row of result) {
+      const customerName = row.customer_name.trim().replace(/\s+/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      const customerEmail = row.customer_email.trim().toLowerCase();
+      const customerAddress = row.customer_address.trim();
+      const customerPhone = row.customer_phone.trim();
+      const productId = row.product_sku.trim().toUpperCase();
+      const productName = row.product_name.trim();
+      const productCategory = row.product_category.trim().toLowerCase();;
+      const productUnitPrice = row.unit_price.trim();
+      const saleId = row.transaction_id.trim().toUpperCase();
+      const saleDate = row.date.trim();
+      const saleQuantity = row.quantity.trim();
+      const saleTotalLineValue = row.total_line_value.trim();
+      const supplierName = row.supplier_name.trim().toLowerCase();
+      const supplierEmail = row.supplier_email.trim().toLowerCase();
+
+      const customerResult = await client.query(`
+        INSERT INTO "customer" ("name" , "email", "address", "phone")
+        VALUES ($1, $2, $3, $4) ON CONFLICT ("email")
+        DO UPDATE SET
+          name = EXCLUDED.name
+        returning xmax
+      `, [customerName, customerEmail, customerAddress,customerPhone])
+      
+      const customerId = await client.query(`
+        SELECT id from customer where name = $1
+      ` [customerName])
+      
+      const productResult = await client.query(`
+        INSERT INTO "product" ("product_sku" , "name", "category", "unit_price")
+        VALUES ($1, $2, $3, $4) ON CONFLICT ("product_sku")
+        DO UPDATE SET
+          name = EXCLUDED.name
+        returning xmax
+        `,[productId, productName, productCategory,productUnitPrice])
+
+      const saleResult = await client.query(`
+        INSERT INTO "sale" ("transaction_id" , "date", "quantity", "total_line_value")
+        VALUES ($1, $2, $3, $4) ON CONFLICT ("transaction_id")
+        DO UPDATE SET
+          name = EXCLUDED.name
+        returning xmax
+        `,[saleId, saleDate, saleQuantity,saleTotalLineValue])
+
+
+      const supplierResult = await client.query(`
+        INSERT INTO "supplier" ("supplier_name" , "email")
+        VALUES ($1, $2) ON CONFLICT ("email")
+        DO UPDATE SET
+          name = EXCLUDED.name
+        returning xmax
+        `,[supplierName, supplierEmail])
+    }
+  } catch (error) {
+    console.log(error);
     await client.query("ROLLBACK");
   } finally {
     client.release();
