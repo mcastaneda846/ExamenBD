@@ -14,6 +14,7 @@ export const pool = new Pool({
 async function createTables() {
    try {
     await queryTables()
+    console.log("Tablas creadas con éxito")
    } catch (error) {
     console.error(error);
    }
@@ -26,5 +27,10 @@ async function migrateData() {
         console.error(error);
     }
 }
+
+(async () => {
+    await createTables();
+    await migrateData();
+})();
 
 export { createTables, migrateData }

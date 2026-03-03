@@ -6,4 +6,4 @@ export const app = express();
 
 app.use(express.json())
 
-app.use('/api/simulacro', migrateRouter )
+app.use('/api', migrateRouter); 
